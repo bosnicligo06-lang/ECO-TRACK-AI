@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack AI - Municipal Authentication Portal</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .login-wrapper {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .login-card {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            max-width: 440px;
+            width: 100%;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+        .top-accent-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(to right, #059669, #0d9488, #2563eb);
+        }
+        .logo-box {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 1rem;
+            background: linear-gradient(135deg, #047857, #14b8a6);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem auto;
+            box-shadow: 0 10px 15px -3px rgba(4, 120, 87, 0.3);
+            font-size: 1.75rem;
+        }
+        .quick-accounts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .quick-btn {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .quick-btn:hover {
+            border-color: #047857;
+            background: #f0fdf4;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="top-accent-bar"></div>
+
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div class="logo-box">♻</div>
+                <h2 style="font-size: 1.35rem; font-weight: 800; color: #0f172a; letter-spacing: -0.025em;">EcoTrack AI</h2>
+                <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">
+                    Smart Waste Collection & IoT Fleet Management Portal
+                </p>
+            </div>
+
+            <!-- Error Banner -->
+            <div th:if="${errorMessage}" style="padding: 0.75rem; border-radius: 0.75rem; background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; font-size: 0.75rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span>⚠️</span>
+                <span th:text="${errorMessage}">Invalid municipal credentials.</span>
+            </div>
+
+            <!-- Success Banner -->
+            <div th:if="${successMessage}" style="padding: 0.75rem; border-radius: 0.75rem; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; font-size: 0.75rem; margin-bottom: 1rem;">
+                <span th:text="${successMessage}">Logged out successfully.</span>
+            </div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="form-group">
+                    <label class="form-label" for="identifier">Municipal Email / Username</label>
+                    <input type="text" id="identifier" name="identifier" class="form-control" 
+                           placeholder="e.g. admin@chennaiwaste.gov.in" 
+                           th:value="${enteredIdentifier != null ? enteredIdentifier : 'admin@chennaiwaste.gov.in'}" required>
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.375rem;">
+                        <label class="form-label" for="password" style="margin-bottom: 0;">Password</label>
+                        <span style="font-size: 0.6875rem; color: #047857; font-weight: 600; cursor: pointer;">Forgot Password?</span>
+                    </div>
+                    <input type="password" id="password" name="password" class="form-control" 
+                           placeholder="••••••••" value="admin123" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; margin-top: 0.5rem; font-size: 0.8125rem;">
+                    <span>Authenticate Securely</span>
+                    <span>→</span>
+                </button>
+            </form>
+
+            <!-- Quick Demo Accounts Filler -->
+            <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
+                <p style="font-size: 0.6875rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; margin-bottom: 0.5rem;">
+                    Registered Municipal Accounts (One-Click)
+                </p>
+
+                <div class="quick-accounts-grid">
+                    <div class="quick-btn" onclick="fillLogin('admin@chennaiwaste.gov.in', 'admin123')">
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 0.75rem; color: #0f172a;">
+                            <span>Admin</span>
+                            <span class="badge badge-normal" style="font-size: 0.6rem;">ADMIN</span>
+                        </div>
+                        <p style="font-size: 0.625rem; color: #64748b; font-family: monospace; margin-top: 0.25rem;">admin@chennaiwaste</p>
+                    </div>
+
+                    <div class="quick-btn" onclick="fillLogin('murugan.driver@chennaiwaste.gov.in', 'driver123')">
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 0.75rem; color: #0f172a;">
+                            <span>Driver (500kg)</span>
+                            <span class="badge badge-info" style="font-size: 0.6rem;">TRUCK-500</span>
+                        </div>
+                        <p style="font-size: 0.625rem; color: #64748b; font-family: monospace; margin-top: 0.25rem;">murugan.driver</p>
+                    </div>
+
+                    <div class="quick-btn" onclick="fillLogin('selvam.driver@chennaiwaste.gov.in', 'driver123')">
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 0.75rem; color: #0f172a;">
+                            <span>Driver (1000kg)</span>
+                            <span class="badge badge-info" style="font-size: 0.6rem;">TRUCK-1000</span>
+                        </div>
+                        <p style="font-size: 0.625rem; color: #64748b; font-family: monospace; margin-top: 0.25rem;">selvam.driver</p>
+                    </div>
+
+                    <div class="quick-btn" onclick="fillLogin('kavitha.seg@chennaiwaste.gov.in', 'officer123')">
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 0.75rem; color: #0f172a;">
+                            <span>Segregation</span>
+                            <span class="badge badge-high" style="font-size: 0.6rem;">OFFICER</span>
+                        </div>
+                        <p style="font-size: 0.625rem; color: #64748b; font-family: monospace; margin-top: 0.25rem;">kavitha.seg</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "ECOTRACK AI",
+  "description": "Smart Tracking, segreggation and collection system",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack AI - Segregation Portal</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div class="toast-container" id="toastContainer">
+        <div th:if="${successToast}" class="toast" style="border-left-color: #059669;">
+            <div>
+                <strong style="color: #34d399; display: block; margin-bottom: 2px;">Waste Data Saved</strong>
+                <span th:text="${successToast}">Waste data saved successfully.</span>
+            </div>
+            <button onclick="this.parentElement.remove()" style="background:none; border:none; color:white; cursor:pointer;">✕</button>
+        </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="header-container">
+        <div class="header-top">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 2.25rem; height: 2.25rem; border-radius: 0.625rem; background: linear-gradient(135deg, #059669, #10b981); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; font-weight: bold;">
+                    🌱
+                </div>
+                <div>
+                    <h1 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.2;">Community & Segregation Portal</h1>
+                    <span style="font-size: 0.6875rem; color: #64748b;">Ward Waste Processing Division • GCC</span>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="text-align: right;">
+                    <span style="font-weight: 700; font-size: 0.8125rem; color: #0f172a;" th:text="${currentUser.fullName}">Kavitha Sundaram</span>
+                    <span style="font-size: 0.6875rem; color: #64748b; display: block;">Ward Segregation Officer</span>
+                </div>
+                <a th:href="@{/logout}" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.375rem 0.625rem;">
+                    Sign Out
+                </a>
+            </div>
+        </div>
+
+        <!-- 4 Navigation Items (in exact required order) -->
+        <nav class="nav-bar-container">
+            <a th:href="@{/segregation?tab=dashboard}" class="nav-tab-btn" th:classappend="${activeTab == 'dashboard' ? 'active' : ''}">Dashboard</a>
+            <a th:href="@{/segregation?tab=enter-waste}" class="nav-tab-btn" th:classappend="${activeTab == 'enter-waste' ? 'active' : ''}">Enter Waste Data</a>
+            <a th:href="@{/segregation?tab=guide}" class="nav-tab-btn" th:classappend="${activeTab == 'guide' ? 'active' : ''}">Segregation Guide</a>
+            <a th:href="@{/segregation?tab=profile}" class="nav-tab-btn" th:classappend="${activeTab == 'profile' ? 'active' : ''}">Profile</a>
+        </nav>
+    </header>
+
+    <main style="max-width: 1280px; width: 100%; margin: 0 auto; padding: 1.5rem 1rem; flex: 1;">
+
+        <!-- 1. DASHBOARD OVERALL VIEW (4 Metric Cards at top + Recent Entries Table) -->
+        <div th:if="${activeTab == 'dashboard'}">
+            <!-- 4 Metric Cards -->
+            <div class="metric-grid">
+                <!-- 1. Total Waste Received -->
+                <div class="card" style="border-top: 4px solid #0f172a;">
+                    <span style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Total Waste Received</span>
+                    <h3 style="font-size: 1.85rem; font-weight: 800; color: #0f172a; margin: 0.35rem 0;" th:text="${metrics.grandTotal + ' kg'}">1,245 kg</h3>
+                    <p style="font-size: 0.75rem; color: #64748b;">Today's total collection</p>
+                </div>
+
+                <!-- 2. Wet Waste (Organic) -->
+                <div class="card" style="border-top: 4px solid #059669;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.75rem; font-weight: 700; color: #059669; text-transform: uppercase;">Wet Waste (Organic)</span>
+                        <span class="badge badge-normal" th:text="${metrics.wetPercent + '%'}">54.6%</span>
+                    </div>
+                    <h3 style="font-size: 1.85rem; font-weight: 800; color: #047857; margin: 0.35rem 0;" th:text="${metrics.totalWet + ' kg'}">680 kg</h3>
+                    <p style="font-size: 0.75rem; color: #059669; font-weight: 600;">Composting & Biomethanation feedstock</p>
+                </div>
+
+                <!-- 3. Dry Waste (Recyclable) -->
+                <div class="card" style="border-top: 4px solid #2563eb;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.75rem; font-weight: 700; color: #2563eb; text-transform: uppercase;">Dry Waste (Recyclable)</span>
+                        <span class="badge badge-info" th:text="${metrics.dryPercent + '%'}">33.7%</span>
+                    </div>
+                    <h3 style="font-size: 1.85rem; font-weight: 800; color: #1d4ed8; margin: 0.35rem 0;" th:text="${metrics.totalDry + ' kg'}">420 kg</h3>
+                    <p style="font-size: 0.75rem; color: #2563eb; font-weight: 600;">Material Recovery Facility stream</p>
+                </div>
+
+                <!-- 4. Hazardous Waste (Sanitary) -->
+                <div class="card" style="border-top: 4px solid #ea580c;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.75rem; font-weight: 700; color: #ea580c; text-transform: uppercase;">Hazardous Waste (Sanitary)</span>
+                        <span class="badge badge-high" th:text="${metrics.hazPercent + '%'}">11.7%</span>
+                    </div>
+                    <h3 style="font-size: 1.85rem; font-weight: 800; color: #c2410c; margin: 0.35rem 0;" th:text="${metrics.totalHazardous + ' kg'}">145 kg</h3>
+                    <p style="font-size: 0.75rem; color: #ea580c; font-weight: 600;">Incineration & safe disposal protocol</p>
+                </div>
+            </div>
+
+            <!-- Recent Entries Table -->
+            <div class="card" style="margin-top: 1rem;">
+                <div class="card-header">
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 800; color: #0f172a;">Recent Ward Segregation Log</h3>
+                        <p style="font-size: 0.6875rem; color: #64748b;">Historical manual batch entries recorded by field officers</p>
+                    </div>
+                    <a th:href="@{/segregation?tab=enter-waste}" class="btn btn-primary" style="font-size: 0.75rem;">
+                        + New Entry
+                    </a>
+                </div>
+
+                <div class="table-container" style="margin-top: 0.75rem;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Location / Ward</th>
+                                <th>Wet (kg)</th>
+                                <th>Dry (kg)</th>
+                                <th>Hazardous (kg)</th>
+                                <th>Total (kg)</th>
+                                <th>Entered By</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="ent : ${entries}">
+                                <td style="font-family: monospace; font-size: 0.75rem;" th:text="${ent.date}">2025-05-14</td>
+                                <td style="font-weight: 700; color: #0f172a;" th:text="${ent.location}">Ward 124 - Mylapore Market Hub</td>
+                                <td style="font-weight: 700; color: #047857;" th:text="${ent.wetKg + ' kg'}">380 kg</td>
+                                <td style="font-weight: 700; color: #2563eb;" th:text="${ent.dryKg + ' kg'}">240 kg</td>
+                                <td style="font-weight: 700; color: #ea580c;" th:text="${ent.hazardousKg + ' kg'}">80 kg</td>
+                                <td style="font-weight: 800; color: #0f172a; font-size: 0.875rem;" th:text="${ent.totalKg + ' kg'}">700 kg</td>
+                                <td style="font-size: 0.6875rem; color: #64748b;" th:text="${ent.enteredBy}">Kavitha Sundaram</td>
+                                <td style="font-size: 0.6875rem; color: #64748b;" th:text="${ent.remarks}">Vegetable market waste</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. ENTER WASTE DATA FORM PAGE -->
+        <div th:if="${activeTab == 'enter-waste'}">
+            <div class="card" style="max-width: 680px; margin: 0 auto;">
+                <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin-bottom: 0.25rem;">Enter Waste Data</h3>
+                <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 1.5rem;">
+                    Log daily segregated solid waste measurements received at the ward collection point.
+                </p>
+
+                <form th:action="@{/segregation/enter-waste}" method="post">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="entryDate">Date</label>
+                            <input type="date" id="entryDate" name="date" class="form-control" th:value="${todayDate}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="entryLocation">Ward / Location</label>
+                            <input type="text" id="entryLocation" name="location" class="form-control" 
+                                   placeholder="e.g. Ward 124 - Luz Church Road Depot" required>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="wetKg">Wet Waste (kg)</label>
+                            <input type="number" id="wetKg" name="wetKg" class="form-control" value="0" min="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="dryKg">Dry Waste (kg)</label>
+                            <input type="number" id="dryKg" name="dryKg" class="form-control" value="0" min="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="hazardousKg">Hazardous (kg)</label>
+                            <input type="number" id="hazardousKg" name="hazardousKg" class="form-control" value="0" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="totalKg">Total Waste (Auto-calculated)</label>
+                        <input type="text" id="totalKg" class="form-control" readonly 
+                               style="background: #f1f5f9; font-weight: 800; color: #0f172a; font-size: 1rem;" value="0 kg">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="remarks">Remarks / Notes (Optional)</label>
+                        <textarea id="remarks" name="remarks" class="form-control" rows="3" 
+                                  placeholder="e.g. Commercial packing boxes; food waste from marriage hall"></textarea>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
+                        <a th:href="@{/segregation?tab=dashboard}" class="btn btn-outline">Cancel</a>
+                        <button type="submit" class="btn btn-primary" style="padding: 0.625rem 1.25rem;">Save Waste Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 3. SEGREGATION GUIDE -->
+        <div th:if="${activeTab == 'guide'}">
+            <div class="card">
+                <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem;">Greater Chennai Corporation Segregation Guidelines</h3>
+                <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 1.5rem;">Mandatory 3-way segregation protocols under GCC Solid Waste Management Bylaws.</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;">
+                    <div style="padding: 1.25rem; border-radius: 0.75rem; background: #ecfdf5; border: 1px solid #a7f3d0;">
+                        <h4 style="font-size: 0.95rem; font-weight: 800; color: #065f46; margin-bottom: 0.5rem;">🟢 Wet Organic Waste</h4>
+                        <ul style="font-size: 0.75rem; color: #064e3b; line-height: 1.6; padding-left: 1rem;">
+                            <li>Cooked and uncooked food leftovers</li>
+                            <li>Fruit peels, vegetable trimmings, seeds</li>
+                            <li>Garden leaves, coconut shells, flowers</li>
+                            <li>Coffee grounds and tea leaves</li>
+                        </ul>
+                    </div>
+
+                    <div style="padding: 1.25rem; border-radius: 0.75rem; background: #eff6ff; border: 1px solid #bfdbfe;">
+                        <h4 style="font-size: 0.95rem; font-weight: 800; color: #1e40af; margin-bottom: 0.5rem;">🔵 Dry Recyclable Waste</h4>
+                        <ul style="font-size: 0.75rem; color: #1e3a8a; line-height: 1.6; padding-left: 1rem;">
+                            <li>Paper, cardboard, newspapers, cartons</li>
+                            <li>Plastic bottles, containers, clean poly bags</li>
+                            <li>Metal cans, foil containers, scrap metal</li>
+                            <li>Glass bottles, jars, unbroken glassware</li>
+                        </ul>
+                    </div>
+
+                    <div style="padding: 1.25rem; border-radius: 0.75rem; background: #fff7ed; border: 1px solid #fed7aa;">
+                        <h4 style="font-size: 0.95rem; font-weight: 800; color: #9a3412; margin-bottom: 0.5rem;">🔴 Sanitary & Hazardous Waste</h4>
+                        <ul style="font-size: 0.75rem; color: #7c2d12; line-height: 1.6; padding-left: 1rem;">
+                            <li>Sanitary napkins, diapers, bandages</li>
+                            <li>Expired medications and blister packs</li>
+                            <li>Paints, pesticides, thinners, batteries</li>
+                            <li>Fluorescent tubes and electronic waste</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. PROFILE -->
+        <div th:if="${activeTab == 'profile'}">
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 1.25rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0;">
+                    <div style="width: 4rem; height: 4rem; border-radius: 1rem; background: linear-gradient(135deg, #059669, #10b981); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; font-weight: bold;">
+                        👩‍💼
+                    </div>
+                    <div>
+                        <h2 style="font-size: 1.25rem; font-weight: 800; color: #0f172a;" th:text="${currentUser.fullName}">Kavitha Sundaram</h2>
+                        <p style="font-size: 0.75rem; color: #64748b;">Ward Segregation Officer • Zone 09</p>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                            <span class="badge badge-normal" th:text="${'Badge: ' + currentUser.badgeNumber}">Badge: GCC-SEG-045</span>
+                            <span class="badge badge-info">Active Officer</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="padding: 1rem; background: #f8fafc; border-radius: 0.75rem; border: 1px solid #e2e8f0;">
+                        <span style="font-size: 0.6875rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Official Contact</span>
+                        <p style="font-size: 0.875rem; font-weight: 700; color: #0f172a; margin-top: 0.25rem;" th:text="${currentUser.phone}">+91 97909 54321</p>
+                        <p style="font-size: 0.6875rem; color: #64748b; margin-top: 0.25rem;" th:text="${currentUser.email}">kavitha.seg@chennaiwaste.gov.in</p>
+                    </div>
+
+                    <div style="padding: 1rem; background: #f8fafc; border-radius: 0.75rem; border: 1px solid #e2e8f0;">
+                        <span style="font-size: 0.6875rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Facility & Jurisdiction</span>
+                        <p style="font-size: 0.875rem; font-weight: 700; color: #0f172a; margin-top: 0.25rem;" th:text="${currentUser.depot}">Mylapore Waste Processing Facility</p>
+                        <p style="font-size: 0.6875rem; color: #64748b; margin-top: 0.25rem;" th:text="${currentUser.ward}">Zone 09 - Ward 124</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer style="background: #ffffff; border-top: 1px solid #e2e8f0; padding: 1rem; font-size: 0.75rem; color: #64748b; margin-top: 2rem;">
+        <div style="max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <div><strong>EcoTrack AI</strong> • Segregation Division • Greater Chennai Corporation</div>
+            <div>Helpline: <strong>1913</strong></div>
+        </div>
+    </footer>
+
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>
